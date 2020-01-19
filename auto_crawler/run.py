@@ -1,3 +1,3 @@
 from scrapy.cmdline import execute
 
-execute('scrapy crawl auto_ria -o cars.csv'.split())
+execute('scrapy crawl auto_ria -a pages=20 -a size=100 -o cars.csv'.split())

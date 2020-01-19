@@ -7,12 +7,17 @@ class AutoRiaSpider(scrapy.Spider):
     allowed_domains = ['auto.ria.com']
     start_urls = ['https://auto.ria.com/car/bmw/']
 
+    def __init__(self, category=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def start_requests(self):
-        for i in range(1, 21):
+        pages = self.pages or 1
+        size = self.size or 10
+        for i in range(1, int(pages) + 1):
             yield scrapy.Request(
-                url=f'https://auto.ria.com/car/bmw/?page={i}&countpage=100',
+                url=f'https://auto.ria.com/car/bmw/?page={i}&countpage={size}',
                 callback=self.parse,
-                cookies={'ipp': 100}
+                cookies={'ipp': size}
             )
 
     def parse(self, response):
