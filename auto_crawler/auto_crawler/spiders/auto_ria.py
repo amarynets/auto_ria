@@ -21,7 +21,9 @@ class AutoRiaSpider(scrapy.Spider):
             )
 
     def parse(self, response):
-        all_cars = response.css('section.ticket-item.new__ticket.t.paid')
+        all_cars = response.css('section.ticket-item.new__ticket.t')
+        if len(all_cars) < 10:
+            a = 1
         for car in all_cars:
             item = {
                 'itemLink': car.css('div.content-bar a.m-link-ticket::attr(href)').extract_first(),

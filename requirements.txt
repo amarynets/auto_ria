@@ -1,0 +1,4 @@
+scrapy
+aiohttp
+bs4
+requests
