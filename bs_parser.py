@@ -18,11 +18,11 @@ def parse_list(response):
 def parse_car(response):
     soup = Bs(response)
     item = {
-        'title': soup.select_one('h1.head').attrs.get('title'),
+        'title': '',
         'usd': soup.select_one('div.price_value strong'),
         'eur': soup.select_one('span[data-currency="EUR"]'),
         'uah': soup.select_one('span[data-currency="UAH"]'),
-        'phone': soup.select_one('div.phones_item span').attrs.get('data-phone-number'),
+        'phone': '',
         'description': soup.select_one('div#full-description'),
         'color': '',
         'markName': soup.select_one('h1.head span[itemprop="brand"]'),
@@ -36,7 +36,11 @@ def parse_car(response):
         except Exception as e:
             item[k] = ''
     color = soup.select_one('span.car-color')
-    if color:
-        item['color'] = color.parent.text
+    title = soup.select_one('h1.head')
+    phone = soup.select_one('div.phones_item span')
+
+    item['color'] = color.parent.text if color else ''
+    item['title'] = title.attrs.get('title') if title else ''
+    item['phone'] = phone.attrs.get('data-phone-number') if phone else ''
 
     return item

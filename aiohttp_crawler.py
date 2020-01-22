@@ -40,5 +40,5 @@ async def process(pages, size):
     print('Work is done. Elapsed time: ',  elapsed_time)
 
 
-asyncio.run(process(3, 100))
+asyncio.run(process(20, 100))
 
