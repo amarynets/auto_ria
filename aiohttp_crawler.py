@@ -28,7 +28,7 @@ async def process(pages, size):
         for item, car in zip(items, (parse_car(r) for r in cars_pages)):
             item['item'].update(car)
 
-    with open('res.csv', 'w') as f:
+    with open('aiohttp.csv', 'w') as f:
         csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
         csv_writer.writeheader()
         for items in items_on_pages:
