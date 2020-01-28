@@ -30,4 +30,4 @@ def process(pages, size):
     elapsed_time = end_time - start_time
     print('Work is done. Elapsed time: ', elapsed_time)
 
-process(20, 100)
+process(10, 10)

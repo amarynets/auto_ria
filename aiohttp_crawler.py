@@ -7,7 +7,7 @@ from bs_parser import parse_car, parse_list
 
 
 async def fetch_page(url):
-    cookies = {'ipp': 100}
+    cookies = {'ipp': 10}
     async with aiohttp.ClientSession(cookies=cookies) as session:
         async with session.get(url) as resp:
             return await resp.text()
@@ -20,7 +20,7 @@ async def process(pages, size):
     list_pages = await asyncio.gather(*list_pages_to_fetch)
 
     items_on_pages = [{'item': item, 'url': item['itemLink']} for page in list_pages for item in parse_list(page)]
-    items_on_pages = list(zip(*[items_on_pages[i::100] for i in range(100)]))
+    items_on_pages = list(zip(*[items_on_pages[i::size] for i in range(size)]))
     for items in items_on_pages:
         list_car_pages_to_fetch = [fetch_page(i['url']) for i in items]
         cars_pages = await asyncio.gather(*list_car_pages_to_fetch)
@@ -40,5 +40,5 @@ async def process(pages, size):
     print('Work is done. Elapsed time: ',  elapsed_time)
 
 
-asyncio.run(process(20, 100))
+asyncio.run(process(10, 10))
 
