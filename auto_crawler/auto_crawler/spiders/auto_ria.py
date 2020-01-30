@@ -7,23 +7,22 @@ class AutoRiaSpider(scrapy.Spider):
     allowed_domains = ['auto.ria.com']
     start_urls = ['https://auto.ria.com/car/bmw/']
 
-    def __init__(self, category=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def start_requests(self):
         pages = self.pages or 1
         size = self.size or 10
+        car = self.car or 'bmw'
         for i in range(1, int(pages) + 1):
             yield scrapy.Request(
-                url=f'https://auto.ria.com/car/bmw/?page={i}&countpage={size}',
+                url=f'https://auto.ria.com/car/{car}/?page={i}&countpage={size}',
                 callback=self.parse,
                 cookies={'ipp': size}
             )
 
     def parse(self, response):
         all_cars = response.css('section.ticket-item.new__ticket.t')
-        if len(all_cars) < 10:
-            a = 1
         for car in all_cars:
             item = {
                 'itemLink': car.css('div.content-bar a.m-link-ticket::attr(href)').extract_first(),

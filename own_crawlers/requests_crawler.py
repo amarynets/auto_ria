@@ -2,15 +2,15 @@ import csv
 import time
 import requests
 
-from bs_parser import parse_list, parse_car
+from own_crawlers.bs_parser import parse_list, parse_car
 
 
-def process(pages, size):
+def process(pages, size, car='bmw'):
     start_time = time.time()
     fieldnames = ['itemLink', 'location', 'race', 'fuelName', 'gearboxName', 'title', 'usd', 'eur', 'uah', 'phone',
                   'description', 'color', 'markName', 'modelName', 'category']
     list_pages = [
-        requests.get(f'https://auto.ria.com/car/bmw/?page={i}&countpage={size}', cookies={'ipp': str(size)})
+        requests.get(f'https://auto.ria.com/car/{car}/?page={i}&countpage={size}', cookies={'ipp': str(size)})
         for i in range(1, pages + 1)
     ]
 

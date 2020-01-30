@@ -3,20 +3,20 @@ import csv
 import time
 import aiohttp
 
-from bs_parser import parse_car, parse_list
+from own_crawlers.bs_parser import parse_car, parse_list
 
 
-async def fetch_page(url):
-    cookies = {'ipp': 10}
+async def fetch_page(url, size=10):
+    cookies = {'ipp': str(size)}
     async with aiohttp.ClientSession(cookies=cookies) as session:
         async with session.get(url) as resp:
             return await resp.text()
 
 
-async def process(pages, size):
+async def process(pages, size, car='bmw'):
     start_time = time.time()
     fieldnames = ['itemLink', 'location', 'race', 'fuelName', 'gearboxName', 'title', 'usd', 'eur', 'uah', 'phone', 'description', 'color', 'markName', 'modelName', 'category']
-    list_pages_to_fetch = [fetch_page(f'https://auto.ria.com/car/bmw/?page={i}&countpage={size}') for i in range(1, pages + 1)]
+    list_pages_to_fetch = [fetch_page(f'https://auto.ria.com/car/{car}/?page={i}&countpage={size}', 10) for i in range(1, pages + 1)]
     list_pages = await asyncio.gather(*list_pages_to_fetch)
 
     items_on_pages = [{'item': item, 'url': item['itemLink']} for page in list_pages for item in parse_list(page)]
