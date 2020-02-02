@@ -39,7 +39,7 @@ class Crawler:
         for i in range(1, self.pages + 1):
             await self.queue.put(f'https://auto.ria.com/car/{self.car}/?page={i}&countpage={self.size}')
             self._item_to_scrap += 1
-        async with aiohttp.ClientSession(cookies={'ipp': str(self.size)}) as session:
+        async with aiohttp.ClientSession(cookies={'ipp': str(self.size)}, connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
             all_coro = asyncio.gather(*[self._worker(session) for _ in range(10)])
             await all_coro
         self.stat['end_time'] = time.time()
