@@ -10,9 +10,11 @@ async def fetch_page(session, url):
     async with session.get(url) as resp:
         return await resp.text()
 
+
 async def bound_fetch(sem, session, url):
     async with sem:
         return await fetch_page(session, url)
+
 
 async def process(pages, size, car='bmw'):
     start_time = time.time()
