@@ -1,7 +1,39 @@
 from bs4 import BeautifulSoup as Bs
+from parsel import Selector
 
 
 def parse_list(response):
+    response = Selector(text=response)
+    all_cars = response.css('section.ticket-item.new__ticket.t')
+    for car in all_cars:
+        item = {
+            'itemLink': car.css('div.content-bar a.m-link-ticket::attr(href)').extract_first(),
+            'location': car.css('ul li.view-location::text').extract_first(default='').strip(),
+            'race': car.xpath('.//ul/li/i[@class="icon-mileage"]/../text()').extract_first(default='').strip(),
+            'fuelName': car.xpath('.//ul/li/i[@class="icon-fuel"]/../text()').extract_first(default='').strip(),
+            'gearboxName': car.xpath('.//ul/li/i[@class="icon-transmission"]/../text()').extract_first(
+                default='').strip(),
+        }
+        yield item
+
+
+def parse_car(response):
+    response = Selector(text=response)
+    item = {}
+    item['title'] = response.css('h1.head::attr(title)').extract_first()
+    item['usd'] = response.css('div.price_value strong::text').extract_first()
+    item['eur'] = response.css('span[data-currency="EUR"]::text').extract_first()
+    item['uah'] = response.css('span[data-currency="UAH"]::text').extract_first()
+    item['phone'] = response.css('div.phones_item span::attr(data-phone-number)').extract_first(default='')
+    item['description'] = response.css('div#full-description::text').extract_first()
+    item['color'] = response.xpath('.//span[@class="car-color"]/../text()').extract_first()
+    item['markName'] = response.css('h1.head span[itemprop="brand"]::text').extract_first()
+    item['modelName'] = response.css('h1.head span[itemprop="name"]::text').extract_first()
+    item['category'] = response.css('div#description_v3 dl dd::text').extract_first(default='').strip()
+    return item
+
+
+def parse_list_bs(response):
     soup = Bs(response)
     all_cars = soup.select('section.ticket-item.new__ticket.t')
     for car in all_cars:
@@ -15,7 +47,7 @@ def parse_list(response):
         yield item
 
 
-def parse_car(response):
+def parse_car_bs(response):
     soup = Bs(response)
     item = {
         'title': '',

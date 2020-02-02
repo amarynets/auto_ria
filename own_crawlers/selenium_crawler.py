@@ -40,7 +40,7 @@ def process(pages, size, car='bmw'):
     print('Work is done. Elapsed time: ', elapsed_time)
 
 try:
-    process(3, 10)
+    process(10, 10)
 except Exception as e:
     driver.close()
     driver.quit()
