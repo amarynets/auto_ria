@@ -2,6 +2,11 @@ from bs4 import BeautifulSoup as Bs
 from parsel import Selector
 
 
+def parse(url, page, func):
+    print(f'PARSE PAGE: {url}')
+    return func(page)
+
+
 def parse_list(response):
     response = Selector(text=response)
     all_cars = response.css('section.ticket-item.new__ticket.t')

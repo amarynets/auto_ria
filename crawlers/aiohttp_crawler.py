@@ -1,9 +1,9 @@
 import asyncio
 import csv
-import time
+from datetime import datetime
 import aiohttp
 
-from parser import parse_car, parse_list
+from parser import parse_car, parse_list, parse
 
 
 async def fetch_page(session, url):
@@ -13,29 +13,29 @@ async def fetch_page(session, url):
 
 async def bound_fetch(sem, session, url):
     async with sem:
+        print(f'DOWNLOAD PAGE: {url}')
         return await fetch_page(session, url)
 
 
 async def process(pages, size, brand='bmw'):
-    start_time = time.time()
+    start_time = datetime.now()
     sem = asyncio.Semaphore(1000)
     fieldnames = ['itemLink', 'location', 'race', 'fuelName', 'gearboxName', 'title', 'usd', 'eur', 'uah', 'phone', 'description', 'color', 'markName', 'modelName', 'category']
     async with aiohttp.ClientSession(cookies={'ipp': str(size)}, connector=aiohttp.TCPConnector(ssl=False)) as session:
         list_pages_to_fetch = [bound_fetch(sem, session, f'https://auto.ria.com/car/{brand}/?page={i}&countpage={size}') for i in range(1, pages + 1)]
         list_pages = await asyncio.gather(*list_pages_to_fetch)
-    print('Download list pages: ', time.time() - start_time)
+    print('Download list pages: ', datetime.now() - start_time)
     items_on_pages = [{'item': item, 'url': item['itemLink']} for page in list_pages for item in parse_list(page)]
 
-    dt = time.time()
     async with aiohttp.ClientSession() as session:
         list_car_pages_to_fetch = [bound_fetch(sem, session, i['url']) for i in items_on_pages]
         cars_pages = await asyncio.gather(*list_car_pages_to_fetch)
-    print('Download items: ', time.time() - dt)
-    cars_pages = [parse_car(r) for r in cars_pages]
-    for item, car in zip(items_on_pages, cars_pages):
-        item['item'].update(car)
 
-    end_time = time.time()
+    for item, car in zip(items_on_pages, cars_pages):
+        detail_info = parse(item['url'], car, parse_car)
+        item['item'].update(detail_info)
+
+    end_time = datetime.now()
     elapsed_time = end_time - start_time
     with open('aiohttp.csv', 'w') as f:
         csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -51,5 +51,8 @@ def app(pages, size, brand='bmw'):
 
 
 if __name__ == '__main__':
-    app(10, 10, 'bmw')
+    pages = 2
+    size = 10
+    brand = 'bmw'
+    app(pages, size, brand)
 

@@ -1,24 +1,35 @@
 import csv
-import time
+from datetime import datetime
+
 import requests
 
-from parser import parse_list, parse_car
+from parser import parse_list, parse_car, parse
+
+
+def fetch_page(url, cookies=None):
+    if not cookies:
+        cookies = {}
+    print(f'DOWNLOAD PAGE: {url}')
+    response = requests.get(url, cookies)
+    return response
 
 
 def process(pages, size, brand='bmw'):
-    start_time = time.time()
+    start_time = datetime.now()
     fieldnames = ['itemLink', 'location', 'race', 'fuelName', 'gearboxName', 'title', 'usd', 'eur', 'uah', 'phone',
                   'description', 'color', 'markName', 'modelName', 'category']
-    list_pages = [
-        requests.get(f'https://auto.ria.com/car/{brand}/?page={i}&countpage={size}', cookies={'ipp': str(size)})
-        for i in range(1, pages + 1)
+
+    list_pages = [f'https://auto.ria.com/car/{brand}/?page={i}&countpage={size}' for i in range(1, pages + 1)]
+    list_resp = [fetch_page(url, cookies={'ipp': str(size)}) for url in list_pages]
+
+    items_on_pages = [
+        {'item': item, 'url': item['itemLink']}
+        for url, page in zip(list_pages, list_resp) for item in parse(url, page.content.decode(), parse_list)
     ]
-
-    items_on_pages = [{'item': item, 'url': item['itemLink']} for page in list_pages for item in parse_list(page.content)]
-    cars_pages = [requests.get(i['url']) for i in items_on_pages]
-
-    for item, car in zip(items_on_pages, (parse_car(r.content) for r in cars_pages)):
-        item['item'].update(car)
+    for item in items_on_pages:
+        page = fetch_page(item['url'])
+        detail_info = parse(item['url'], page.content.decode(), parse_car)
+        item['item'].update(detail_info)
 
     with open('request.csv', 'w') as f:
         csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -26,7 +37,7 @@ def process(pages, size, brand='bmw'):
         for item in items_on_pages:
             csv_writer.writerow(item['item'])
 
-    end_time = time.time()
+    end_time = datetime.now()
     elapsed_time = end_time - start_time
     print('Work is done. Elapsed time: ', elapsed_time)
 
@@ -36,4 +47,7 @@ def app(pages, size, brand='bmw'):
 
 
 if __name__ == '__main__':
-    app(10, 10, 'bmw')
+    pages = 1
+    size = 10
+    brand = 'bmw'
+    app(pages, size, brand)

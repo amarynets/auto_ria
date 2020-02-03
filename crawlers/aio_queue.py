@@ -1,12 +1,16 @@
 import asyncio
 import csv
 import time
+
+from datetime import datetime
+
 import aiohttp
 
-from parser import parse_car, parse_list
+from parser import parse_car, parse_list, parse
 
 
 async def fetch_page(session, url):
+    print(f'DOWNLOAD PAGE: {url}')
     async with session.get(url) as resp:
         return await resp.text()
 
@@ -36,14 +40,14 @@ class Crawler:
 
     async def crawl(self):
         print('Start crawling')
-        self.stat['start_time'] = time.time()
+        self.stat['start_time'] = datetime.now()
         for i in range(1, self.pages + 1):
             await self.queue.put(f'https://auto.ria.com/car/{self.brand}/?page={i}&countpage={self.size}')
             self._item_to_scrap += 1
         async with aiohttp.ClientSession(cookies={'ipp': str(self.size)}, connector=aiohttp.TCPConnector(ssl=False)) as session:
             all_coro = asyncio.gather(*[self._worker(session) for _ in range(10)])
             await all_coro
-        self.stat['end_time'] = time.time()
+        self.stat['end_time'] = datetime.now()
         self.stat['elapsed_time'] = self.stat['end_time'] - self.stat['start_time']
 
     def save(self):
@@ -61,13 +65,14 @@ class Crawler:
             self._item_to_scrap -= 1
             if isinstance(item, str):
                 page = await bound_fetch(self.sem, session, item)
-                items = parse_list(page)
+                print(f'PARSE PAGE: {item}')
+                items = parse(item, page, parse_list)
                 for item in items:
                     await self.queue.put(item)
                     self._item_to_scrap += 1
             elif isinstance(item, dict):
                 page = await bound_fetch(self.sem, session, item['itemLink'])
-                item.update(parse_car(page))
+                item.update(parse(item['itemLink'], page, parse_car))
                 self.result.append(item)
             if not self._item_to_scrap:
                 return
@@ -76,8 +81,12 @@ class Crawler:
 def app(pages, size, brand='bmw'):
     c = Crawler(pages=pages, size=size, brand=brand)
     asyncio.run(c.crawl())
+    print(c.stat)
     c.save()
 
 
 if __name__ == '__main__':
-    app(10, 10, 'bmw')
+    pages = 2
+    size = 10
+    brand = 'bmw'
+    app(pages, size, brand)
