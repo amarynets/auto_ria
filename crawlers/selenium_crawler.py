@@ -1,11 +1,7 @@
 import time
 import csv
 from selenium import webdriver
-from own_crawlers.bs_parser import parse_list, parse_car
-
-
-driver = webdriver.Chrome()
-driver.get('https://github.com/')
+from parser import parse_list, parse_car
 
 
 def fetch_page(driver, url):
@@ -13,13 +9,13 @@ def fetch_page(driver, url):
     return driver.page_source
 
 
-def process(pages, size, car='bmw'):
+def process(driver, pages, size, brand='bmw'):
     driver.add_cookie({'name': 'ipp', 'value': str(size), 'domain': 'auto.ria.com', 'path': '/'})
     start_time = time.time()
     fieldnames = ['itemLink', 'location', 'race', 'fuelName', 'gearboxName', 'title', 'usd', 'eur', 'uah', 'phone',
                   'description', 'color', 'markName', 'modelName', 'category']
     list_pages = [
-        fetch_page(driver, f'https://auto.ria.com/car/{car}/?page={i}&countpage={size}')
+        fetch_page(driver, f'https://auto.ria.com/car/{brand}/?page={i}&countpage={size}')
         for i in range(1, pages + 1)
     ]
 
@@ -39,12 +35,19 @@ def process(pages, size, car='bmw'):
     elapsed_time = end_time - start_time
     print('Work is done. Elapsed time: ', elapsed_time)
 
-try:
-    process(10, 10)
-except Exception as e:
-    driver.close()
-    driver.quit()
-    raise e
-finally:
-    driver.quit()
 
+def app(pages, size, brand='bmw'):
+    driver = webdriver.Chrome()
+    driver.get('https://github.com/')
+    try:
+        process(driver=driver, pages=pages, size=size, brand=brand)
+    except Exception as e:
+        driver.close()
+        driver.quit()
+        raise e
+    finally:
+        driver.quit()
+
+
+if __name__ == '__main__':
+    app(10, 10, 'bmw')

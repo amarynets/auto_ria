@@ -3,7 +3,7 @@ import csv
 import time
 import aiohttp
 
-from own_crawlers.bs_parser import parse_car, parse_list
+from parser import parse_car, parse_list
 
 
 async def fetch_page(session, url):
@@ -18,8 +18,8 @@ async def bound_fetch(sem, session, url):
 
 class Crawler:
 
-    def __init__(self, car='bmw', pages=10, size=10):
-        self.car = car
+    def __init__(self, brand='bmw', pages=10, size=10):
+        self.brand = brand
         self.pages = pages
         self.size = size
         self.queue = asyncio.Queue()
@@ -35,11 +35,12 @@ class Crawler:
         self._item_to_scrap = 0
 
     async def crawl(self):
+        print('Start crawling')
         self.stat['start_time'] = time.time()
         for i in range(1, self.pages + 1):
-            await self.queue.put(f'https://auto.ria.com/car/{self.car}/?page={i}&countpage={self.size}')
+            await self.queue.put(f'https://auto.ria.com/car/{self.brand}/?page={i}&countpage={self.size}')
             self._item_to_scrap += 1
-        async with aiohttp.ClientSession(cookies={'ipp': str(self.size)}, connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+        async with aiohttp.ClientSession(cookies={'ipp': str(self.size)}, connector=aiohttp.TCPConnector(ssl=False)) as session:
             all_coro = asyncio.gather(*[self._worker(session) for _ in range(10)])
             await all_coro
         self.stat['end_time'] = time.time()
@@ -72,10 +73,11 @@ class Crawler:
                 return
 
 
-c = Crawler(pages=20, size=100)
-asyncio.run(c.crawl())
-c.save()
+def app(pages, size, brand='bmw'):
+    c = Crawler(pages=pages, size=size, brand=brand)
+    asyncio.run(c.crawl())
+    c.save()
 
-print(c.stat)
 
-
+if __name__ == '__main__':
+    app(10, 10, 'bmw')
