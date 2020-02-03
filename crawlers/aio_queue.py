@@ -1,6 +1,5 @@
 import asyncio
 import csv
-import time
 
 from datetime import datetime
 
@@ -26,7 +25,7 @@ class Crawler:
         self.brand = brand
         self.pages = pages
         self.size = size
-        self.queue = asyncio.Queue()
+        self.queue = None
         self.stat = {
             'start_time': 0,
             'download_time': 0,
@@ -39,6 +38,7 @@ class Crawler:
         self._item_to_scrap = 0
 
     async def crawl(self):
+        self.queue = asyncio.Queue()
         print('Start crawling')
         self.stat['start_time'] = datetime.now()
         for i in range(1, self.pages + 1):
@@ -65,14 +65,15 @@ class Crawler:
             self._item_to_scrap -= 1
             if isinstance(item, str):
                 page = await bound_fetch(self.sem, session, item)
-                print(f'PARSE PAGE: {item}')
                 items = parse(item, page, parse_list)
+                # items = parse_list(page)
                 for item in items:
                     await self.queue.put(item)
                     self._item_to_scrap += 1
             elif isinstance(item, dict):
                 page = await bound_fetch(self.sem, session, item['itemLink'])
                 item.update(parse(item['itemLink'], page, parse_car))
+                # item.update(parse_car(page))
                 self.result.append(item)
             if not self._item_to_scrap:
                 return
