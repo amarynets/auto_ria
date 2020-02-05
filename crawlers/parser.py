@@ -35,8 +35,11 @@ def parse_car(response):
     item['phone'] = response.css('div.phones_item span::attr(data-phone-number)').extract_first(default='')
     item['description'] = response.css('div#full-description::text').extract_first()
     item['color'] = response.xpath('.//span[@class="car-color"]/../text()').extract_first()
-    item['markName'] = response.css('h1.head span[itemprop="brand"]::text').extract_first()
-    item['modelName'] = response.css('h1.head span[itemprop="name"]::text').extract_first()
+
+    breadcrumbs = response.xpath('.//div[@itemtype="http://data-vocabulary.org/Breadcrumb"]/..')
+    item['markName'] = breadcrumbs.xpath('.//a/@title').extract()[-1]
+    item['modelName'] = breadcrumbs.xpath('span/text()').extract_first()
+
     item['category'] = response.css('div#description_v3 dl dd::text').extract_first(default='').strip()
     return item
 
