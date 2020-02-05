@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import json
+import re
 import scrapy
 
 
@@ -16,9 +18,12 @@ class AutoRiaSpider(scrapy.Spider):
         car = self.car or 'bmw'
         for i in range(1, int(pages) + 1):
             yield scrapy.Request(
-                url=f'https://auto.ria.com/car/{car}/?page={i}&countpage={size}',
-                callback=self.parse,
-                cookies={'ipp': size}
+                # url=f'https://auto.ria.com/car/{car}/?page={i}&countpage={size}',
+                url='https://auto.ria.com/newauto/auto-bmw-x5-1821513.html',
+                callback=self.parse_car,
+                meta={'item': {}}
+                # callback=self.parse,
+                # cookies={'ipp': size}
             )
 
     def parse(self, response):
@@ -39,7 +44,10 @@ class AutoRiaSpider(scrapy.Spider):
 
     def parse_car(self, response):
         item = response.meta['item']
-        item['title'] = response.css('h1.head::attr(title)').extract_first()
+        title = response.css('h1.head::attr(title)').extract_first()
+        if not title:
+            title = response.css('h1.auto-head_title::text').extract_first()
+        item['title'] = title
         item['usd'] = response.css('div.price_value strong::text').extract_first()
         item['eur'] = response.css('span[data-currency="EUR"]::text').extract_first()
         item['uah'] = response.css('span[data-currency="UAH"]::text').extract_first()
