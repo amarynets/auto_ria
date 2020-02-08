@@ -14,8 +14,7 @@ def fetch_page(driver, url):
 def process(driver, pages, size, brand='bmw'):
     driver.add_cookie({'name': 'ipp', 'value': str(size), 'domain': 'auto.ria.com', 'path': '/'})
     start_time = datetime.now()
-    fieldnames = ['itemLink', 'location', 'race', 'fuelName', 'gearboxName', 'title', 'usd', 'eur', 'uah', 'phone',
-                  'description', 'color', 'markName', 'modelName', 'category']
+    fieldnames = ['itemLink', 'markName', 'modelName', 'title', 'year', 'uah', 'category',  'phone', 'color', 'description', 'race', 'location', 'fuelName', 'gearboxName']
 
     list_pages = [f'https://auto.ria.com/car/{brand}/?page={i}&countpage={size}' for i in range(1, pages + 1)]
     list_resp = [fetch_page(driver, url) for url in list_pages]
@@ -37,7 +36,7 @@ def process(driver, pages, size, brand='bmw'):
 
     end_time = datetime.now()
     elapsed_time = end_time - start_time
-    print('Work is done. Elapsed time: ', elapsed_time)
+    print('Ellapsed time:', int(elapsed_time.total_seconds() * 1000), 'ms')
 
 
 def app(pages, size, brand='bmw'):

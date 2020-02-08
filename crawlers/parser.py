@@ -25,12 +25,16 @@ def parse_list(response):
 def parse_car(response):
     response = Selector(text=response)
     item = {}
+    year = response.css('h1.head::attr(title)').get().split(' ')[-1]
+    if not year:
+        title = response.css('h1.auto-head_title::text').get().split(' ')[-1]
     title = response.css('h1.head::attr(title)').extract_first()
     if not title:
         title = response.css('h1.auto-head_title::text').extract_first()
     item['title'] = title
-    item['usd'] = response.css('div.price_value strong::text').extract_first()
-    item['eur'] = response.css('span[data-currency="EUR"]::text').extract_first()
+    item['year'] = year
+    # item['usd'] = response.css('div.price_value strong::text').extract_first()
+    # item['eur'] = response.css('span[data-currency="EUR"]::text').extract_first()
     item['uah'] = response.css('span[data-currency="UAH"]::text').extract_first()
     item['phone'] = response.css('div.phones_item span::attr(data-phone-number)').extract_first(default='')
     item['description'] = response.css('div#full-description::text').extract_first()
