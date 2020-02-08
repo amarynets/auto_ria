@@ -53,7 +53,7 @@ def app(pages, size, brand='bmw'):
 
 
 if __name__ == '__main__':
-    pages = 1
-    size = 10
+    pages = 10
+    size = 100
     brand = 'bmw'
     app(pages, size, brand)

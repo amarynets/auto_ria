@@ -18,12 +18,12 @@ class AutoRiaSpider(scrapy.Spider):
         car = self.car or 'bmw'
         for i in range(1, int(pages) + 1):
             yield scrapy.Request(
-                url='https://auto.ria.com/newauto/auto-bmw-x5-1821513.html',
-                callback=self.parse_car,
-                meta={'item': {}}
-                # url=f'https://auto.ria.com/car/{car}/?page={i}&countpage={size}',
-                # callback=self.parse,
-                # cookies={'ipp': size}
+                # url='https://auto.ria.com/newauto/auto-bmw-x5-1821513.html',
+                # callback=self.parse_car,
+                # meta={'item': {}}
+                url=f'https://auto.ria.com/car/{car}/?page={i}&countpage={size}',
+                callback=self.parse,
+                cookies={'ipp': size}
             )
 
     def parse(self, response):
