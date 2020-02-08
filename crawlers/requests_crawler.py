@@ -16,7 +16,7 @@ def fetch_page(url, cookies=None):
 
 def process(pages, size, brand='bmw'):
     start_time = datetime.now()
-    fieldnames = ['itemLink', 'location', 'race', 'fuelName', 'gearboxName', 'title', 'usd', 'eur', 'uah', 'phone',
+    fieldnames = ['itemLink', 'location', 'race', 'fuelName', 'gearboxName', 'title', 'year', 'uah', 'phone',
                   'description', 'color', 'markName', 'modelName', 'category']
 
     list_pages = [f'https://auto.ria.com/car/{brand}/?page={i}&countpage={size}' for i in range(1, pages + 1)]
@@ -47,7 +47,7 @@ def app(pages, size, brand='bmw'):
 
 
 if __name__ == '__main__':
-    pages = 1
+    pages = 100
     size = 10
     brand = 'bmw'
     app(pages, size, brand)
