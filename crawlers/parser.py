@@ -25,14 +25,11 @@ def parse_list(response):
 def parse_car(response):
     response = Selector(text=response)
     item = {}
-    year = response.css('h1.head::attr(title)').get().split(' ')[-1]
-    if not year:
-        title = response.css('h1.auto-head_title::text').get().split(' ')[-1]
     title = response.css('h1.head::attr(title)').extract_first()
     if not title:
         title = response.css('h1.auto-head_title::text').extract_first()
     item['title'] = title
-    item['year'] = year
+    item['year'] = title.split()[-1]
     # item['usd'] = response.css('div.price_value strong::text').extract_first()
     # item['eur'] = response.css('span[data-currency="EUR"]::text').extract_first()
     item['uah'] = response.css('span[data-currency="UAH"]::text').extract_first()
@@ -41,10 +38,15 @@ def parse_car(response):
     item['color'] = response.xpath('.//span[@class="car-color"]/../text()').extract_first()
 
     breadcrumbs = response.xpath('.//div[@itemtype="http://data-vocabulary.org/Breadcrumb"]/..')
-    item['markName'] = breadcrumbs.xpath('.//a/@title').extract()[-1]
-    item['modelName'] = breadcrumbs.xpath('span/text()').extract_first()
+    model_name = breadcrumbs.xpath('./span/text()').extract_first()
+    model_name = model_name or ''.join(breadcrumbs.xpath('./text()').extract()).strip()
+    item['markName'] = breadcrumbs.xpath('.//a/span/text()').extract()[-1]
+    item['modelName'] = model_name
 
     item['category'] = response.css('div#description_v3 dl dd::text').extract_first(default='').strip()
+    for k, v in item.items():
+        if not v:
+            item[k] = ''
     return item
 
 

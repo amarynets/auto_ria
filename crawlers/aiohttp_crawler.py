@@ -20,7 +20,7 @@ async def bound_fetch(sem, session, url):
 async def process(pages, size, brand='bmw'):
     start_time = datetime.now()
     sem = asyncio.Semaphore(1000)
-    fieldnames = ['itemLink', 'location', 'race', 'fuelName', 'gearboxName', 'title', 'usd', 'eur', 'uah', 'phone', 'description', 'color', 'markName', 'modelName', 'category']
+    fieldnames = ['itemLink', 'location', 'race', 'fuelName', 'gearboxName', 'title', 'year', 'uah', 'phone', 'description', 'color', 'markName', 'modelName', 'category']
     async with aiohttp.ClientSession(cookies={'ipp': str(size)}, connector=aiohttp.TCPConnector(ssl=False)) as session:
         list_pages_to_fetch = [bound_fetch(sem, session, f'https://auto.ria.com/car/{brand}/?page={i}&countpage={size}') for i in range(1, pages + 1)]
         list_pages = await asyncio.gather(*list_pages_to_fetch)
@@ -37,7 +37,7 @@ async def process(pages, size, brand='bmw'):
 
     end_time = datetime.now()
     elapsed_time = end_time - start_time
-    with open('aiohttp.csv', 'w') as f:
+    with open('aiohttp_crawler.csv', 'w') as f:
         csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
         csv_writer.writeheader()
         for item in items_on_pages:
@@ -51,8 +51,8 @@ def app(pages, size, brand='bmw'):
 
 
 if __name__ == '__main__':
-    pages = 2
-    size = 10
+    pages = 10
+    size = 100
     brand = 'bmw'
     app(pages, size, brand)
 

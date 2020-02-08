@@ -18,12 +18,12 @@ class AutoRiaSpider(scrapy.Spider):
         car = self.car or 'bmw'
         for i in range(1, int(pages) + 1):
             yield scrapy.Request(
-                # url='https://auto.ria.com/newauto/auto-bmw-x5-1821513.html',
-                # callback=self.parse_car,
-                # meta={'item': {}}
-                url=f'https://auto.ria.com/car/{car}/?page={i}&countpage={size}',
-                callback=self.parse,
-                cookies={'ipp': size}
+                url='https://auto.ria.com/newauto/auto-bmw-x5-1821513.html',
+                callback=self.parse_car,
+                meta={'item': {}}
+                # url=f'https://auto.ria.com/car/{car}/?page={i}&countpage={size}',
+                # callback=self.parse,
+                # cookies={'ipp': size}
             )
 
     def parse(self, response):
@@ -48,16 +48,19 @@ class AutoRiaSpider(scrapy.Spider):
         if not title:
             title = response.css('h1.auto-head_title::text').extract_first()
         item['title'] = title
-        item['usd'] = response.css('div.price_value strong::text').extract_first()
-        item['eur'] = response.css('span[data-currency="EUR"]::text').extract_first()
+        item['year'] = title.split()[-1]
+        # item['usd'] = response.css('div.price_value strong::text').extract_first()
+        # item['eur'] = response.css('span[data-currency="EUR"]::text').extract_first()
         item['uah'] = response.css('span[data-currency="UAH"]::text').extract_first()
         item['phone'] = response.css('div.phones_item span::attr(data-phone-number)').extract_first(default='')
         item['description'] = response.css('div#full-description::text').extract_first()
         item['color'] = response.xpath('.//span[@class="car-color"]/../text()').extract_first()
 
         breadcrumbs = response.xpath('.//div[@itemtype="http://data-vocabulary.org/Breadcrumb"]/..')
-        item['markName'] = breadcrumbs.xpath('.//a/@title').extract()[-1]
-        item['modelName'] = breadcrumbs.xpath('span/text()').extract_first()
+        model_name = breadcrumbs.xpath('./span/text()').extract_first()
+        model_name = model_name or ''.join(breadcrumbs.xpath('./text()').extract()).strip()
+        item['markName'] = breadcrumbs.xpath('.//a/span/text()').extract()[-1]
+        item['modelName'] = model_name
 
         item['category'] = response.css('div#description_v3 dl dd::text').extract_first(default='').strip()
         yield item

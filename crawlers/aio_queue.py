@@ -51,9 +51,9 @@ class Crawler:
         self.stat['elapsed_time'] = self.stat['end_time'] - self.stat['start_time']
 
     def save(self):
-        fieldnames = ['itemLink', 'location', 'race', 'fuelName', 'gearboxName', 'title', 'usd', 'eur', 'uah', 'phone',
+        fieldnames = ['itemLink', 'location', 'race', 'fuelName', 'gearboxName', 'title', 'year', 'uah', 'phone',
                       'description', 'color', 'markName', 'modelName', 'category']
-        with open('aiohttp.csv', 'w') as f:
+        with open('aiohttp_queue.csv', 'w') as f:
             csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
             csv_writer.writeheader()
             for item in self.result:
@@ -87,7 +87,7 @@ def app(pages, size, brand='bmw'):
 
 
 if __name__ == '__main__':
-    pages = 2
-    size = 10
+    pages = 10
+    size = 100
     brand = 'bmw'
     app(pages, size, brand)
